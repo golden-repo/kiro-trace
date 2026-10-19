@@ -1,0 +1,843 @@
+/* dashboard.css
+   Professional, management-oriented styling for the kiro-trace dashboard.
+   No external framework/CDN dependency on purpose, so the dashboard works
+   fully offline / inside a locked-down cluster network with no outbound
+   internet access. */
+
+:root {
+  --bg: #0f1117;
+  --card-bg: #171a24;
+  --card-bg-alt: #1c2030;
+  --border: #2a2e3b;
+  --text: #e6e6e6;
+  --text-dim: #9aa0ac;
+  --accent: #4f8cff;
+  --green: #33c481;
+  --red: #e5534b;
+  --amber: #e5a63b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family:
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+header {
+  padding: 24px 32px 8px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent), #7c5cff);
+  color: white;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 26px;
+}
+
+.subtitle {
+  color: var(--text-dim);
+  margin: 2px 0 0;
+  font-size: 13px;
+}
+
+main {
+  padding: 8px 32px 32px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.card h2 {
+  margin-top: 0;
+  font-size: 18px;
+}
+
+.hint {
+  color: var(--text-dim);
+  font-size: 13px;
+  margin-top: -6px;
+}
+
+.card-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.controls.hidden {
+  display: none;
+}
+
+.auto-refresh-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+button {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.secondary-btn {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.danger-btn {
+  background: var(--red);
+}
+
+.clear-btn {
+  background: transparent;
+  color: var(--red);
+  border: 1px solid var(--red);
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+.clear-btn.clear-btn-telemetry {
+  background: var(--red);
+  color: white;
+}
+
+select,
+input[type="password"] {
+  background: #0f1117;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 14px;
+}
+
+.auth-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.auth-row label {
+  color: var(--text-dim);
+}
+
+.status-pill {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: var(--red);
+  color: white;
+}
+
+.status-pill.connected {
+  background: var(--green);
+}
+
+/* ---------------- Fleet summary strip ---------------- */
+
+.summary-strip {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.summary-tile {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  text-align: center;
+}
+
+.summary-value {
+  display: block;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.summary-label {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+@media (max-width: 900px) {
+  .summary-strip {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ---------------- Grouped usage view ---------------- */
+
+.machine-group {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.machine-group-header {
+  background: var(--card-bg-alt);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  flex-wrap: wrap;
+}
+
+.machine-group-header .machine-icon {
+  color: var(--accent);
+}
+
+.machine-group-header .group-meta {
+  color: var(--text-dim);
+  font-weight: 400;
+  font-size: 12px;
+}
+
+.user-group {
+  padding: 10px 16px 14px 28px;
+  border-top: 1px solid var(--border);
+}
+
+.user-group-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  flex-wrap: wrap;
+}
+
+.user-group-header .user-name {
+  font-weight: 600;
+}
+
+.user-group-header .group-meta {
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
+.session-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.session-table th,
+.session-table td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.session-table td:last-child {
+  display: flex;
+  gap: 6px;
+}
+
+.session-table th {
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.session-id-cell {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+}
+
+/* Status icon badges: one per component (handler / watcher). Green = a
+   recent heartbeat was seen for that component, red = stale/never seen. */
+.status-icons {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.status-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+  padding: 0;
+  line-height: 1;
+}
+
+.status-icon-btn.alive {
+  background: var(--green);
+}
+.status-icon-btn.dead {
+  background: var(--red);
+}
+.status-icon-btn.unknown {
+  background: #454b5c;
+  color: var(--text-dim);
+}
+
+.status-icon-btn:hover {
+  opacity: 0.85;
+}
+
+.dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.dot.alive {
+  background: var(--green);
+}
+.dot.dead {
+  background: var(--red);
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  padding: 0;
+  font-size: 13px;
+  text-decoration: underline;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 13px;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+th {
+  color: var(--text-dim);
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  background: var(--card-bg);
+}
+
+#telemetry-table-container {
+  overflow-x: auto;
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+.empty-row {
+  color: var(--text-dim);
+  text-align: center;
+  padding: 16px 0;
+}
+
+.hidden {
+  display: none !important;
+}
+
+footer {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 12px;
+  padding: 16px;
+}
+
+footer a {
+  color: var(--accent);
+}
+
+/* ---------------- Modals ---------------- */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-content {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  max-width: 700px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.confirm-modal-content {
+  max-width: 420px;
+}
+
+.confirm-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  background: none;
+  font-size: 20px;
+  line-height: 1;
+  padding: 0;
+}
+
+#detail-modal-body {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 13px;
+  color: var(--text);
+}
+
+#detail-modal-body dl {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 6px 12px;
+  margin: 0;
+}
+
+#detail-modal-body dt {
+  color: var(--text-dim);
+}
+
+#detail-modal-body dd {
+  margin: 0;
+}
+
+#detail-modal-body pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--card-bg-alt);
+  padding: 10px;
+  border-radius: 6px;
+}
+
+/* ---------------- Info tooltips ---------------- */
+/* A small "ⓘ" affordance next to any field whose meaning might not be
+   obvious. Hover or focus (keyboard-accessible) reveals an explanatory
+   popover positioned above the icon. Pure CSS, no JS required. */
+
+.info-tip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  margin-left: 4px;
+  border-radius: 50%;
+  color: var(--text-dim);
+  font-size: 13px;
+  line-height: 1;
+  cursor: help;
+  position: relative;
+  outline: none;
+  vertical-align: middle;
+}
+
+.info-tip:hover,
+.info-tip:focus-visible {
+  color: var(--accent);
+}
+
+.info-tip::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  width: 240px;
+  max-width: 60vw;
+  background: #05070c;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  text-transform: none;
+  letter-spacing: normal;
+  white-space: normal;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease;
+  z-index: 60;
+  pointer-events: none;
+}
+
+.info-tip::before {
+  content: "";
+  position: absolute;
+  bottom: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #05070c;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.12s ease;
+  z-index: 60;
+}
+
+.info-tip:hover::after,
+.info-tip:focus-visible::after,
+.info-tip:hover::before,
+.info-tip:focus-visible::before {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ---------------- Filter bar ---------------- */
+
+.filter-bar-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  padding: 8px 12px;
+  background: var(--card-bg-alt);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin: 4px 0 6px;
+  transition: background 0.15s;
+}
+
+.filter-bar-header:hover {
+  background: #222638;
+}
+
+.filter-bar-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.02em;
+  transition: transform 0.2s;
+}
+
+.filter-bar-header[aria-expanded="true"] .filter-bar-title {
+  /* arrow points up when expanded */
+}
+
+.filter-bar-hint {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-left: auto;
+}
+
+.filter-bar {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(150px, 1fr));
+  gap: 14px;
+  margin: 4px 0 18px;
+  padding: 16px;
+  background: var(--card-bg-alt);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.filter-field label {
+  font-size: 12px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  display: flex;
+  align-items: center;
+}
+
+.filter-field select,
+.filter-field input[type="date"] {
+  width: 100%;
+}
+
+.filter-field-actions {
+  justify-content: flex-end;
+}
+
+.filter-field-actions button {
+  width: 100%;
+}
+
+input[type="date"] {
+  background: #0f1117;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 14px;
+  font-family: inherit;
+  color-scheme: dark;
+}
+
+@media (max-width: 1100px) {
+  .filter-bar {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 600px) {
+  .filter-bar {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------------- Analytics summary strip ---------------- */
+/* Same tile look as the fleet summary strip, but 5 columns and scoped
+   to the currently-filtered analytics selection rather than the whole
+   fleet. */
+
+.analytics-summary-strip {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.analytics-summary-strip .summary-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+@media (max-width: 900px) {
+  .analytics-summary-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ---------------- Tabs ---------------- */
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+
+.tab-btn {
+  background: transparent;
+  color: var(--text-dim);
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  padding: 10px 4px;
+  margin-right: 22px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.tab-btn:hover {
+  color: var(--text);
+  opacity: 1;
+}
+
+.tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.tab-panel.hidden {
+  display: none;
+}
+
+/* ---------------- Charts ---------------- */
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.chart-card {
+  background: var(--card-bg-alt);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px 8px;
+}
+
+.chart-card-wide {
+  grid-column: 1 / -1;
+}
+
+.chart-card h3 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: var(--text-dim);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  display: flex;
+  align-items: center;
+}
+
+.chart-svg {
+  width: 100%;
+  height: 220px;
+  display: block;
+  overflow: visible;
+}
+
+.chart-svg-bar {
+  height: 260px;
+}
+
+.chart-axis-label {
+  fill: var(--text-dim);
+  font-size: 10px;
+  font-family:
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+}
+
+.chart-empty {
+  fill: var(--text-dim);
+  font-size: 13px;
+  font-family:
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+  text-anchor: middle;
+}
+
+.chart-bar-label {
+  fill: var(--text);
+  font-size: 11px;
+  font-family:
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+}
+
+.chart-tooltip-target:hover {
+  opacity: 0.85;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+  .chart-card-wide {
+    grid-column: auto;
+  }
+}

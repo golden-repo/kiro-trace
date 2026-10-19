@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# Environment files: keep the .example templates in version control,
+# but never commit the real .env (production) or .env.development
+# files, since they hold real secrets (API_KEY, REDIS_PASSWORD) once
+# filled in for actual use.
+.env
+.env.development

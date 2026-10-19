@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>kiro-trace Dashboard</title>
+    <link rel="stylesheet" href="/static/dashboard.css" />
+</head>
+
+<body>
+    <header>
+        <div class="header-title">
+            <span class="brand-mark">kt</span>
+            <div>
+                <h1>kiro-trace</h1>
+                <p class="subtitle">Usage, Cost &amp; Source-Control Analytics for Kiro CLI</p>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- API key entry: the browser has no other way to know this secret,
+             so the dashboard asks for it once and keeps it in the browser's
+             localStorage for convenience on future visits. It is only ever
+             sent as the X-API-Key header to this same server. -->
+        <section class="card" id="auth-card">
+            <div class="auth-row">
+                <label for="api-key-input">API Key</label>
+                <input type="password" id="api-key-input" placeholder="Enter X-API-Key value" />
+                <button id="save-key-btn">Save</button>
+                <span id="auth-status" class="status-pill">not connected</span>
+                <div class="spacer"></div>
+                <label class="auto-refresh-label">
+                    <input type="checkbox" id="auto-refresh-toggle" checked />
+                    Auto-refresh (10s)
+                </label>
+                <button id="refresh-btn" class="secondary-btn">Refresh now</button>
+            </div>
+        </section>
+
+        <!-- Fleet-level summary strip: quick at-a-glance counters for
+             management, before drilling into any one machine/user/session. -->
+        <section class="summary-strip" id="summary-strip">
+            <div class="summary-tile">
+                <span class="summary-value" id="summary-machines">0</span>
+                <span class="summary-label">Machines</span>
+            </div>
+            <div class="summary-tile">
+                <span class="summary-value" id="summary-users">0</span>
+                <span class="summary-label">Users</span>
+            </div>
+            <div class="summary-tile">
+                <span class="summary-value" id="summary-sessions">0</span>
+                <span class="summary-label">Sessions</span>
+            </div>
+            <div class="summary-tile">
+                <span class="summary-value" id="summary-active">0</span>
+                <span class="summary-label">Active Components</span>
+            </div>
+            <div class="summary-tile">
+                <span class="summary-value" id="summary-credits">0</span>
+                <span class="summary-label">Total Credits Used</span>
+            </div>
+            <div class="summary-tile">
+                <span class="summary-value" id="summary-tokens">0</span>
+                <span class="summary-label">Total Tokens (est.)</span>
+            </div>
+        </section>
+
+        <!-- ================================================================
+             Usage Analytics: source-control-aware token & credit reporting.
+             Filter by user / session / organization / repository / project /
+             branch / SCM host type / VCS type and a date range, then view
+             the result as computed aggregates, detailed records, or charts. -->
+        <section class="card" id="analytics-card">
+            <div class="card-header-row">
+                <h2>
+                    Usage Analytics
+                    <span class="info-tip" tabindex="0"
+                        data-tip="Token and credit consumption attributed to source-control context (organization, repository, branch) in addition to user and session. Use the filters below to narrow the scope, then switch tabs to see computed totals, individual records, or trend charts for the same selection.">&#9432;</span>
+                </h2>
+                <button id="analytics-refresh-btn" class="secondary-btn">Refresh</button>
+            </div>
+
+            <!-- Filter bar (collapsible) -->
+            <div class="filter-bar-header" id="filter-bar-toggle" role="button" tabindex="0" aria-expanded="false"
+                aria-controls="filter-bar-body">
+                <span class="filter-bar-title">&#9660; Filters</span>
+                <span class="filter-bar-hint" id="filter-bar-hint">Click to expand</span>
+            </div>
+            <div class="filter-bar hidden" id="filter-bar-body">
+                <div class="filter-field">
+                    <label for="filter-user">
+                        User
+                        <span class="info-tip" tabindex="0"
+                            data-tip="The Kiro CLI user who ran the session, resolved from heartbeat data reported to /api/health.">&#9432;</span>
+                    </label>
+                    <select id="filter-user">
+                        <option value="">All users</option>
+                    </select>
+                </div>
+                <div class="filter-field">
+                    <label for="filter-session">
+                        Session
+                        <span class="info-tip" tabindex="0"
+                            data-tip="A single Kiro CLI session id. Each time you start Kiro CLI, a new session id is generated.">&#9432;</span>
+                    </label>
+                    <select id="filter-session">
+                        <option value="">All sessions</option>
+                    </select>
+                </div>
+                <div class="filter-field">
+                    <label for="filter-organization">
+                        Organization
+                        <span class="info-tip" tabindex="0"
+                            data-tip="The organization or account that owns the remote repository, e.g. 'ericsson'. Parsed from the repository's remote URL.">&#9432;</span>
+                    </label>
+                    <select id="filter-organization">
+                        <option value="">All organizations</option>
+                    </select>
+                </div>
+                <div class="filter-field">
+                    <label for="filter-repo">
+                        Repository
+                        <span class="info-tip" tabindex="0"
+                            data-tip="The repository name, e.g. 'APIM-Kong-DevOps'. Used to group usage by repository regardless of remote host, protocol, or organization.">&#9432;</span>
+                    </label>
+                    <select id="filter-repo">
+                        <option value="">All repositories</option>
+                    </select>
+                </div>
+                <div class="filter-field">
+                    <label for="filter-project">
+                        Project Name
+                        <span class="info-tip" tabindex="0"
+                            data-tip="The project name reported by the handler/watcher. Usually matches the repository name, but reported separately in case they diverge (e.g. a monorepo subproject).">&#9432;</span>
+                    </label>
+                    <select id="filter-project">
+                        <option value="">All projects</option>
+                    </select>
+                </div>
+                <div class="filter-field">
+                    <label for="filter-branch">
+                        Branch
+                        <span class="info-tip" tabindex="0"
+                            data-tip="The branch checked out in the working directory at the time of the event, e.g. main or master.">&#9432;</span>
+                    </label>
+                    <select id="filter-branch">
+                        <option value="">All branches</option>
+                    </select>
+                </div>
+                <div class="filter-field">
+                    <label for="filter-scm-type">
+                        SCM Type
+                        <span class="info-tip" tabindex="0"
+                            data-tip="The source-control hosting platform, e.g. Azure DevOps, GitHub, or GitLab. Distinct from VCS Type (the underlying version-control tool).">&#9432;</span>
+                    </label>
+                    <select id="filter-scm-type">
+                        <option value="">All SCM types</option>
+                    </select>
+                </div>
+                <div class="filter-field">
+                    <label for="filter-vcs-type">
+                        VCS Type
+                        <span class="info-tip" tabindex="0"
+                            data-tip="The underlying version-control system in use, e.g. git.">&#9432;</span>
+                    </label>
+                    <select id="filter-vcs-type">
+                        <option value="">All VCS types</option>
+                    </select>
+                </div>
+                <div class="filter-field">
+                    <label for="filter-start-date">
+                        From
+                        <span class="info-tip" tabindex="0"
+                            data-tip="Only include activity on or after this date (UTC).">&#9432;</span>
+                    </label>
+                    <input type="date" id="filter-start-date" />
+                </div>
+                <div class="filter-field">
+                    <label for="filter-end-date">
+                        To
+                        <span class="info-tip" tabindex="0"
+                            data-tip="Only include activity on or before this date (UTC).">&#9432;</span>
+                    </label>
+                    <input type="date" id="filter-end-date" />
+                </div>
+                <div class="filter-field filter-field-actions">
+                    <label>&nbsp;</label>
+                    <button id="filter-clear-btn" class="secondary-btn">Clear filters</button>
+                </div>
+            </div>
+            <!-- /filter-bar-body -->
+
+            <!-- Computed summary tiles for the current filter selection -->
+            <div class="analytics-summary-strip" id="analytics-summary-strip">
+                <div class="summary-tile">
+                    <span class="summary-value" id="an-summary-records">0</span>
+                    <span class="summary-label">
+                        Matching Events
+                        <span class="info-tip" tabindex="0"
+                            data-tip="Total number of telemetry events (token usage + credit usage) that match the current filters.">&#9432;</span>
+                    </span>
+                </div>
+                <div class="summary-tile">
+                    <span class="summary-value" id="an-summary-turns">0</span>
+                    <span class="summary-label">
+                        Turns
+                        <span class="info-tip" tabindex="0"
+                            data-tip="Number of completed prompt/response turns matching the current filters.">&#9432;</span>
+                    </span>
+                </div>
+                <div class="summary-tile">
+                    <span class="summary-value" id="an-summary-tokens">0</span>
+                    <span class="summary-label">
+                        Total Tokens (est.)
+                        <span class="info-tip" tabindex="0"
+                            data-tip="Estimated prompt + response tokens across all matching events. Estimated because exact token counts depend on the model provider's own tokenizer.">&#9432;</span>
+                    </span>
+                </div>
+                <div class="summary-tile">
+                    <span class="summary-value" id="an-summary-credits">0</span>
+                    <span class="summary-label">
+                        Total Credits Used
+                        <span class="info-tip" tabindex="0"
+                            data-tip="Sum of actual credits consumed (as reported by the watcher) across all matching events. This reflects real billed usage, unlike the estimated token counts.">&#9432;</span>
+                    </span>
+                </div>
+                <div class="summary-tile">
+                    <span class="summary-value" id="an-summary-groups">0</span>
+                    <span class="summary-label">
+                        Groups
+                        <span class="info-tip" tabindex="0"
+                            data-tip="Number of distinct combinations of the grouping dimensions below (organization, repository, branch, user, session) present in the current selection.">&#9432;</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Tab navigation -->
+            <div class="tabs" role="tablist">
+                <button class="tab-btn active" data-tab="overview" role="tab" aria-selected="true">Overview</button>
+                <button class="tab-btn" data-tab="records" role="tab" aria-selected="false">Detailed Records</button>
+                <button class="tab-btn" data-tab="charts" role="tab" aria-selected="false">Charts</button>
+            </div>
+
+            <!-- Overview tab: aggregated totals per group -->
+            <div class="tab-panel" id="tab-overview" role="tabpanel">
+                <div class="card-header-row">
+                    <p class="hint">
+                        Computed totals grouped by organization, repository, branch, user, and session.
+                        Sorted by credits used, highest first.
+                    </p>
+                    <div class="controls">
+                        <label for="group-by-select">
+                            Group by
+                            <span class="info-tip" tabindex="0"
+                                data-tip="Choose which dimensions to combine into each row of the table below. Totals are always computed from every matching event, regardless of grouping.">&#9432;</span>
+                        </label>
+                        <select id="group-by-select">
+                            <option value="organization,repo_name,branch,user_name,session_id" selected>Organization
+                                &rarr; Repo &rarr; Branch &rarr; User &rarr; Session</option>
+                            <option value="organization">Organization only</option>
+                            <option value="repo_name">Repository only</option>
+                            <option value="branch">Branch only</option>
+                            <option value="user_name">User only</option>
+                            <option value="session_id">Session only</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="aggregate-table-container">
+                    <table id="aggregate-table">
+                        <thead>
+                            <tr>
+                                <th>Organization</th>
+                                <th>Repository</th>
+                                <th>Branch</th>
+                                <th>User</th>
+                                <th>Session</th>
+                                <th>Turns</th>
+                                <th>Tokens (est.)</th>
+                                <th>Credits Used</th>
+                                <th>Last Active</th>
+                            </tr>
+                        </thead>
+                        <tbody id="aggregate-table-body">
+                            <tr>
+                                <td colspan="9" class="empty-row">No data yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Detailed Records tab: individual telemetry events -->
+            <div class="tab-panel hidden" id="tab-records" role="tabpanel">
+                <div class="card-header-row">
+                    <p class="hint">
+                        Individual telemetry events matching the current filters, most recent first.
+                    </p>
+                    <div class="controls">
+                        <label for="limit-select">Rows:</label>
+                        <select id="limit-select">
+                            <option value="50">50</option>
+                            <option value="100" selected>100</option>
+                            <option value="500">500</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="telemetry-table-container">
+                    <table id="telemetry-table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Type</th>
+                                <th>Session ID</th>
+                                <th>Organization</th>
+                                <th>Repository</th>
+                                <th>Branch</th>
+                                <th>SCM Type</th>
+                                <th>Model</th>
+                                <th>Prompt Tokens (est.)</th>
+                                <th>Response Tokens (est.)</th>
+                                <th>Credits Used</th>
+                                <th>Status</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="telemetry-table-body">
+                            <tr>
+                                <td colspan="13" class="empty-row">No data yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Charts tab: trends over the selected date range -->
+            <div class="tab-panel hidden" id="tab-charts" role="tabpanel">
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3>
+                            Tokens by Day
+                            <span class="info-tip" tabindex="0"
+                                data-tip="Estimated total tokens (prompt + response) per UTC day, for events matching the current filters.">&#9432;</span>
+                        </h3>
+                        <svg id="chart-tokens" class="chart-svg" viewBox="0 0 600 220" preserveAspectRatio="none"></svg>
+                    </div>
+                    <div class="chart-card">
+                        <h3>
+                            Credits Used by Day
+                            <span class="info-tip" tabindex="0"
+                                data-tip="Actual credits consumed per UTC day, for events matching the current filters.">&#9432;</span>
+                        </h3>
+                        <svg id="chart-credits" class="chart-svg" viewBox="0 0 600 220"
+                            preserveAspectRatio="none"></svg>
+                    </div>
+                    <div class="chart-card chart-card-wide">
+                        <h3>
+                            Credits Used by Repository
+                            <span class="info-tip" tabindex="0"
+                                data-tip="Share of total credits used across the top repositories in the current selection.">&#9432;</span>
+                        </h3>
+                        <svg id="chart-projects" class="chart-svg chart-svg-bar" viewBox="0 0 600 260"
+                            preserveAspectRatio="none"></svg>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Legacy grouped fleet view: usage + health grouped per machine ->
+             user -> session, retained for liveness/heartbeat monitoring. -->
+        <section class="card">
+            <div class="card-header-row">
+                <h2>Fleet Health by Machine &amp; Session</h2>
+                <div class="controls">
+                    <label for="machine-health-filter">Machine:</label>
+                    <select id="machine-health-filter">
+                        <option value="">All machines</option>
+                    </select>
+                </div>
+            </div>
+            <p class="hint">
+                Each session shows a status icon per component (H = handler, W = watcher).
+                Click an icon to see its heartbeat detail. "Clear heartbeats" removes
+                stored liveness data only. "Clear telemetry" removes stored usage
+                (token/credit) history only. Neither action affects the other.
+            </p>
+            <div id="summary-groups">
+                <p class="empty-row">No data yet.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>
+            kiro-trace &middot; data expires automatically after 7 days &middot;
+            <a href="/docs" target="_blank" rel="noopener">API docs</a> &middot;
+            Maintained by <a href="mailto:himadri.majumdar@ericsson.com">Himadri M</a>
+        </p>
+    </footer>
+
+    <!-- A lightweight modal to show the full request/response payload text
+         (when payload capture was enabled on the client) without cluttering
+         the main table. Also reused to show heartbeat detail when a health
+         status icon is clicked. -->
+    <div id="detail-modal" class="modal hidden">
+        <div class="modal-content">
+            <button id="detail-modal-close" class="modal-close">&times;</button>
+            <h3 id="detail-modal-title">Record Detail</h3>
+            <div id="detail-modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Confirmation modal for destructive "Clear" actions (heartbeat data
+         or telemetry usage data), since both are irreversible operations
+         on stored data. -->
+    <div id="confirm-modal" class="modal hidden">
+        <div class="modal-content confirm-modal-content">
+            <h3 id="confirm-modal-title">Clear data?</h3>
+            <p id="confirm-modal-text"></p>
+            <div class="confirm-modal-actions">
+                <button id="confirm-modal-cancel" class="secondary-btn">Cancel</button>
+                <button id="confirm-modal-confirm" class="danger-btn">Clear</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/dashboard.js"></script>
+</body>
+
+</html>
