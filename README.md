@@ -147,5 +147,5 @@ Open **http://localhost:8000/** → paste your API key → data appears as soon 
 
 I'm an Enterprise & AI Solution Architect with hands-on experience in **platform engineering, cloud-native architecture, AI tooling, and developer experience**. kiro-trace is a concrete example of how I approach problems: identify a real operational gap (AI cost visibility), design a minimal but production-quality solution, ship it end-to-end, and validate it with the tools that built it.
 
-📧 [himadri.majumdar@ericsson.com](mailto:himadri.majumdar@ericsson.com)
+📧 [majumdar.himadri@gmail.com](mailto:majumdar.himadri@gmail.com)
 🔗 [LinkedIn](https://www.linkedin.com/in/himadri-majumdar)
